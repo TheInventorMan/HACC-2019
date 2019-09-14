@@ -26,7 +26,7 @@ result = speech_recognizer.recognize_once()
 
 # Checks result.
 if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-    print("Recognized: {}".format(result.text))
+    print(str(result.text))
 elif result.reason == speechsdk.ResultReason.NoMatch:
     print("No speech could be recognized: {}".format(result.no_match_details))
 elif result.reason == speechsdk.ResultReason.Canceled:
