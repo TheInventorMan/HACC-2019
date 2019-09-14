@@ -38,15 +38,19 @@ def get_3d_map():
 #send image to depth map and make 3d space
 
 def describe_scene(img_file):
-    captions = get_img_captions()
+    captions = imgproc.get_img_captions(img_file)
+    top_caption = captions[0]
+    return("I see " + str(top_caption))
 #fcn: describe scene. get 3d map, read caption and all labels by position.
 
 def in_front(img_file):
-    pass
+    objects = imgproc.get_img_objects(img_file)
+    first = objects[0]
+    return("I see a " + str(first))
 #fcn: whats in front. get 3d map, Filter out things not in front, read label
 
 def whats_that(img_file):
-    pass
+    return in_front(img_file)
 #fcn: what's that. default to whats in front if hand not found. use 3d space and hand
 #to figure out pointed object
 
