@@ -25,7 +25,7 @@ subscription_key = "50314f04a9ec4b0aa3241691c5d67d12"
 class TextToSpeech(object):
     def __init__(self, subscription_key):
         self.subscription_key = subscription_key
-        self.tts = input("What would you like to convert to speech: ")
+        self.tts = "I see a person sitting at a table using a laptop"
         self.timestr = time.strftime("%Y%m%d-%H%M")
         self.access_token = None
 

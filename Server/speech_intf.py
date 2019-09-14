@@ -8,7 +8,7 @@ subscription_key = "50314f04a9ec4b0aa3241691c5d67d12"
 fname = "myfile.wav"
 
 class SpeechProcessor(object):
-    def __init__(self, subscription_key):
+    def __init__(self):
         self.subscription_key = subscription_key
         self.access_token = None
 
