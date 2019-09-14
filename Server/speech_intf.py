@@ -56,6 +56,7 @@ class SpeechProcessor(object):
         if result.reason == speechsdk.ResultReason.RecognizedSpeech:
             print(str(result.text))
             return str(result.text)
+            
         elif result.reason == speechsdk.ResultReason.NoMatch:
             print("No speech could be recognized: {}".format(result.no_match_details))
         elif result.reason == speechsdk.ResultReason.Canceled:
