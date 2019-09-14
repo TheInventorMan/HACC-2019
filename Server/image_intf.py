@@ -16,7 +16,7 @@ class ImageProcessor(object):
     def __init__(self):
         self.computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
     
-    def get_img_caption(self):
+    def get_img_captions(self):
         local_image = open(local_image_path, "rb")
         local_image_description = self.computervision_client.describe_image_in_stream(local_image)
         captions = []
@@ -25,7 +25,7 @@ class ImageProcessor(object):
         else:
             for caption in local_image_description.captions:
                 captions.append(caption.text)
-                
+
         return captions
     
     def get_img_objects(self):

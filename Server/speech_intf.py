@@ -20,7 +20,7 @@ class SpeechProcessor(object):
         response = requests.post(fetch_token_url, headers=headers)
         self.access_token = str(response.text)
 
-    def tts_process(self, text):
+    def tts_process(self, text): #text-to-speech, takes text, returns fname
         base_url = 'https://westus.tts.speech.microsoft.com/'
         path = 'cognitiveservices/v1'
         constructed_url = base_url + path
@@ -43,10 +43,11 @@ class SpeechProcessor(object):
         if response.status_code == 200:
             with open('resp' + '.wav', 'wb') as audio:
                 audio.write(response.content)
+                return "resp.wav"
         else:
             print("\nStatus code: " + str(response.status_code) + "\nSomething went wrong. Check your subscription key and headers.\n")
 
-    def stt_process(self, audio_file):
+    def stt_process(self, audio_file): #speech-to-text, takes fname, returns recognized text
         self.speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
         self.audio_config = speechsdk.audio.AudioConfig(filename=audio_file)
         self.speech_recognizer = speechsdk.SpeechRecognizer(speech_config=self.speech_config, audio_config=self.audio_config)
@@ -56,7 +57,7 @@ class SpeechProcessor(object):
         if result.reason == speechsdk.ResultReason.RecognizedSpeech:
             print(str(result.text))
             return str(result.text)
-            
+
         elif result.reason == speechsdk.ResultReason.NoMatch:
             print("No speech could be recognized: {}".format(result.no_match_details))
         elif result.reason == speechsdk.ResultReason.Canceled:
