@@ -4,7 +4,7 @@ import azure.cognitiveservices.speech as speechsdk
 # Replace with your own subscription key and service region (e.g., "westus").
 speech_key, service_region = "50314f04a9ec4b0aa3241691c5d67d12", "westus"
 
-fname = "myfile.wav"
+fname = "sample.aac"
 
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
 audio_config = speechsdk.audio.AudioConfig(filename=fname)
