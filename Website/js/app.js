@@ -11,12 +11,10 @@ var audioContext //audio context to help us record
 
 var recordButton = document.getElementById("recordButton");
 var stopButton = document.getElementById("stopButton");
-var pauseButton = document.getElementById("pauseButton");
 
 //add events to those 2 buttons
 recordButton.addEventListener("click", startRecording);
 stopButton.addEventListener("click", stopRecording);
-pauseButton.addEventListener("click", pauseRecording);
 
 function startRecording() {
 	console.log("recordButton clicked");
@@ -34,12 +32,16 @@ function startRecording() {
 
 	recordButton.disabled = true;
 	stopButton.disabled = false;
-	pauseButton.disabled = false
 
 	/*
     	We're using the standard promise based getUserMedia() 
     	https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
 	*/
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    var video = document.getElementById('video');
+    context.drawImage(video, 0, 0, 640, 480);
+
 
 	navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
 		console.log("getUserMedia() success, stream created, initializing Recorder.js ...");
@@ -76,22 +78,7 @@ function startRecording() {
 	  	//enable the record button if getUserMedia() fails
     	recordButton.disabled = false;
     	stopButton.disabled = true;
-    	pauseButton.disabled = true
 	});
-}
-
-function pauseRecording(){
-	console.log("pauseButton clicked rec.recording=",rec.recording );
-	if (rec.recording){
-		//pause
-		rec.stop();
-		pauseButton.innerHTML="Resume";
-	}else{
-		//resume
-		rec.record()
-		pauseButton.innerHTML="Pause";
-
-	}
 }
 
 function stopRecording() {
@@ -100,10 +87,8 @@ function stopRecording() {
 	//disable the stop button, enable the record too allow for new recordings
 	stopButton.disabled = true;
 	recordButton.disabled = false;
-	pauseButton.disabled = true;
 
-	//reset button just in case the recording is stopped while paused
-	pauseButton.innerHTML="Pause";
+
 	
 	//tell the recorder to stop the recording
 	rec.stop();
@@ -112,7 +97,11 @@ function stopRecording() {
 	gumStream.getAudioTracks()[0].stop();
 
 	//create the wav blob and pass it on to createDownloadLink
-	rec.exportWAV(createDownloadLink);
+    rec.exportWAV(createDownloadLink); 
+}
+
+function Download(url) {
+    document.getElementById('my_iframe').src = url;
 }
 
 function createDownloadLink(blob) {
@@ -132,7 +121,9 @@ function createDownloadLink(blob) {
 	//save to disk link
 	link.href = url;
 	link.download = filename+".wav"; //download forces the browser to donwload the file using the  filename
-	link.innerHTML = "Save to disk";
+    link.innerHTML = "Save to disk";
+
+    document.getElementById('my_iframe').src = link.download
 
 	//add the new audio element to li
 	li.appendChild(au);
@@ -163,5 +154,6 @@ function createDownloadLink(blob) {
 	li.appendChild(upload)//add the upload link to li
 
 	//add the li element to the ol
-	recordingsList.appendChild(li);
+    recordingsList.appendChild(li);
+    return link.download;
 }

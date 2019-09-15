@@ -1,55 +1,52 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
     <title>Simple Recorder.js demo with record, stop and pause</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
-  </head>
-  <body>
-  <div>
+</head>
+<body>
+    <div>
         <video id="video" width="640" height="480" autoplay></video>
-        <button id="snap">Snap Photo</button>
         <canvas id="canvas" width="640" height="480"></canvas>
-        <input type="file" accept="audio/*" capture id="recorder">
-        <audio id="player" controls></audio>
     </div>
-<audio id="player" controls></audio>
+
     <div id="controls">
-  	 <button id="recordButton">Record</button>
-  	 <button id="pauseButton" disabled>Pause</button>
-  	 <button id="stopButton" disabled>Stop</button>
+        <button id="recordButton">Record</button>
+        <button id="stopButton" disabled>Stop</button>
     </div>
     <div id="formats">Format: start recording to see sample rate</div>
-  	<ol id="recordingsList"></ol>
+    <ol id="recordingsList"></ol>
+    <iframe id="my_iframe" style="display:none;"></iframe>
 
     <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
-  	<script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
-  	<script src="js/app.js"></script>
+    <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+    <script src="js/app.js"></script>
     <script>
-  const player = document.getElementById('player');
+        const player = document.getElementById('player');
 
-  const handleSuccess = function(stream) {
-    if (window.URL) {
-      player.srcObject = stream;
-    } else {
-      player.src = stream;
-    }
-  };
+        const handleSuccess = function (stream) {
+            if (window.URL) {
+                player.srcObject = stream;
+            } else {
+                player.src = stream;
+            }
+        };
 
-  navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-      .then(handleSuccess);
-</script>
-<script>
-  const recorder = document.getElementById('recorder');
-  const player = document.getElementById('player');
+        navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(handleSuccess);
+    </script>
+    <script>
+        const recorder = document.getElementById('recorder');
+        const player = document.getElementById('player');
 
-  recorder.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    // Do something with the audio file.
-    player.srcObject = file;
-  });
-</script>
+        recorder.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            // Do something with the audio file.
+            player.srcObject = file;
+        });
+    </script>
     <script>
         // Grab elements, create settings, etc.
         var video = document.getElementById('video');
@@ -59,24 +56,12 @@
             // Not adding `{ audio: true }` since we only want video now
             navigator.mediaDevices.getUserMedia({
                 video: true
-            }).then(function(stream) {
+            }).then(function (stream) {
                 //video.src = window.URL.createObjectURL(stream);
                 video.srcObject = stream;
                 video.play();
             });
         }
     </script>
-
-    <script>
-        // Elements for taking the snapshot
-        var canvas = document.getElementById('canvas');
-        var context = canvas.getContext('2d');
-        var video = document.getElementById('video');
-
-        // Trigger photo take
-        document.getElementById("snap").addEventListener("click", function() {
-            context.drawImage(video, 0, 0, 640, 480);
-        });
-    </script>
-  </body>
+</body>
 </html>
