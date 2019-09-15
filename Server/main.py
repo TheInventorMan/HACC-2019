@@ -15,6 +15,8 @@ speechproc.get_token()
 
 img = "image.jpg"
 
+debug = False
+
 def main(aud_file, img_file):
     transcript = speechproc.stt_process(aud_file).lower()[:-1]
     print(transcript)
@@ -217,10 +219,14 @@ def parse_resp(resp):
     print("Speaking:" + resp)
     return fname
 
-while True:
+while True and debug:
     command = input("enter command:")
     cmd_aud = speechproc.tts_process(command)
 
     resp = main('resp.wav', img) #send audio and img files to main method
 
     print(parse_resp(resp)) #final file to send back to android
+
+def exec(a_fname, i_fname):
+    resp = main(a_fname, i_fname)
+    print(parse_resp(resp))
