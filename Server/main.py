@@ -28,7 +28,7 @@ speechproc.get_token()
 img = "image.jpg"
 
 debug = False
-fallback = False
+fallback = True
 
 def main(aud_file, img_file):
     transcript = speechproc.stt_process(aud_file).lower()[:-1]
