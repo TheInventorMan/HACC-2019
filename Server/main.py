@@ -11,6 +11,8 @@ import pyaudio
 import wave
 import winsound
 
+from tkinter import *
+
 chunk = 1024  # Record in chunks of 1024 samples
 sample_format = pyaudio.paInt16  # 16 bits per sample
 channels = 2
@@ -153,6 +155,9 @@ def closest_to_center(img_file):
 
 def describe_scene(img_file, quant):
     captions = imgproc.get_img_captions(img_file)
+    if len(captions) == 0:
+        return "Sorry, I couldn't detect anything there. "
+
     top_caption = "I see " + str(captions[0])
 
     phrase = top_caption + ". "
@@ -243,7 +248,7 @@ def whats_that(img_file):
 
 def parse_resp(resp):
     fname = speechproc.tts_process(resp)
-    print("Speaking:" + resp)
+    print("Speaking: " + resp)
     return fname
 
 while True and debug:
@@ -255,7 +260,9 @@ while True and debug:
     print(parse_resp(resp)) #final file to send back to android
 
 while True and fallback:
+
     _ = input("Hit any key to begin recording (3 sec)")
+
     #halt exec, press key to record audio
     print("Capturing image...")
     video_capture = cv2.VideoCapture(1)
