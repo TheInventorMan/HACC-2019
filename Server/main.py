@@ -1,10 +1,14 @@
 from image_intf import ImageProcessor
 from speech_intf import SpeechProcessor
 from LU_intf import get_intent
+from Depth.depth_intf import DepthMap
+
+import numpy as np
 
 #start server
 
 #init
+dmap = DepthMap()
 imgproc = ImageProcessor()
 speechproc = SpeechProcessor()
 speechproc.get_token()
@@ -32,6 +36,40 @@ def main(aud_file, img_file):
 
 
 def get_3d_map(img_file):
+    depth_map = dmap.get_depth_map(img_file)
+    r_val = imgproc.get_img_objects(img_file)
+    objects = r_val[0]
+
+    width = r_val[1][0]
+    height = r_val[1][1]
+
+    l_thresh = width/3
+    r_thresh = 2*width/3
+    h_thresh = height/2
+
+    left = []
+    right = []
+    front = []
+    distance = []
+
+    for obj in objects:
+        cropped = depth_map[obj[3]:obj[4], obj[1]:obj[2]]
+        avg_disp = np.mean(cropped)
+        dist = 22.5*0.54*721/(1242*avg_disp)
+        if (obj[1]+obj[2])/2 < l_thresh:
+            left.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+        elif (obj[1]+obj[2])/2 > r_thresh:
+            right.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+        else:
+            if (obj[3]+obj[4])/2 < h_thresh:
+                distance.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+            else:
+                front.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+
+    return (left, right, front, distance)
+
+
+def get_2d_map(img_file):
     r_val = imgproc.get_img_objects(img_file)
     objects = r_val[0]
 
@@ -69,7 +107,7 @@ def describe_scene(img_file):
 
     phrase = top_caption + ". "
 
-    positions = get_3d_map(img_file)
+    positions = get_2d_map(img_file)
 
     for idx in range(len(positions)):
         if len(positions[idx]) == 0:
@@ -121,7 +159,7 @@ def describe_scene(img_file):
     return phrase
 
 def in_front(img_file):
-    positions = get_3d_map(img_file)
+    positions = get_2d_map(img_file)
     front = positions[2] + positions[3]
     phrase = ""
     if len(front) == 0:
@@ -139,7 +177,7 @@ def in_front(img_file):
     return phrase
 
 def whats_that(img_file):
-    positions = get_3d_map(img_file)
+    positions = get_2d_map(img_file)
     front = positions[2] + positions[3]
     phrase = ""
     if len(front) == 0:
