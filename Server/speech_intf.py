@@ -55,7 +55,7 @@ class SpeechProcessor(object):
         result = self.speech_recognizer.recognize_once()
 
         if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-            print(str(result.text))
+            #print(str(result.text))
             return str(result.text)
 
         elif result.reason == speechsdk.ResultReason.NoMatch:

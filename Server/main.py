@@ -4,7 +4,19 @@ from LU_intf import get_intent
 from Depth.depth_intf import DepthMap
 
 import numpy as np
+import cv2
+import sys
+from matplotlib import pyplot as plt
+import pyaudio
+import wave
+import winsound
 
+chunk = 1024  # Record in chunks of 1024 samples
+sample_format = pyaudio.paInt16  # 16 bits per sample
+channels = 2
+fs = 44100  # Record at 44100 samples per second
+seconds = 3
+cmd = "command.wav"
 #start server
 
 #init
@@ -16,10 +28,11 @@ speechproc.get_token()
 img = "image.jpg"
 
 debug = False
+fallback = True
 
 def main(aud_file, img_file):
     transcript = speechproc.stt_process(aud_file).lower()[:-1]
-    print(transcript)
+    print("Detected transcript: " + transcript)
     intent = get_intent(transcript)
 
     if intent == "QualitativeScene":
@@ -115,6 +128,26 @@ def get_2d_map(img_file):
 
     return (left, right, front, distance) #returns only names of objects
 
+def closest_to_center(img_file):
+    r_val = imgproc.get_img_objects(img_file)
+    objects = r_val[0]
+
+    c_x = r_val[1][0]/2
+    c_y = r_val[1][1]/2
+
+    centered = ""
+    lowest_euc_dist = 1000000
+
+    for obj in objects:
+        img_x = (obj[1]+obj[2])/2
+        img_y = (obj[3]+obj[4])/2
+        dist = np.sqrt((img_x-c_x)**2 + (img_y-c_y)**2)
+        if dist < lowest_euc_dist:
+            lowest_euc_dist = dist
+            centered = obj[0]
+    return centered
+
+
 #fcn: get 3d map. send image to imageproc and get labels and bboxes
 #send image to depth map and make 3d space
 
@@ -183,6 +216,9 @@ def in_front(img_file):
     front = positions[2] + positions[3]
     phrase = ""
     if len(front) == 0:
+        front = front + positions[0] + positions[1] #expand window to entire frame
+
+    if len(front) == 0:
         return "There doesn't seem to be anything there. "
 
     if len(front) == 1:
@@ -197,21 +233,12 @@ def in_front(img_file):
     return phrase
 
 def whats_that(img_file):
-    positions = get_2d_map(img_file)
-    front = positions[2] + positions[3]
-    phrase = ""
-    if len(front) == 0:
+    closest = closest_to_center(img_file)
+    if closest == "":
         return "There doesn't seem to be anything there. "
-
-    if len(front) == 1:
-        phrase = phrase + "I see a " + front[0] + ". "
-    elif len(front) == 2:
-        phrase = phrase + "I see a " + front[0] + " and a " + front[1] + ". "
     else:
-        phrase = phrase + "I see "
-        for i in range(len(front)-1):
-            phrase = phrase + "a " + front[i] + ", "
-        phrase = phrase + "and a " + front[-1] + ". "
+        phrase = "I see a " + closest + " over there. "
+
     return phrase
 
 def parse_resp(resp):
@@ -226,6 +253,57 @@ while True and debug:
     resp = main('resp.wav', img) #send audio and img files to main method
 
     print(parse_resp(resp)) #final file to send back to android
+
+while True and fallback:
+    _ = input("Hit any key to begin recording (3 sec)")
+    #halt exec, press key to record audio
+    print("Capturing image...")
+    video_capture = cv2.VideoCapture(1)
+    # Check success
+    if not video_capture.isOpened():
+        raise Exception("Could not open video device")
+        # Read picture. ret === True on success
+    ret, frame = video_capture.read()
+    # Close device
+    video_capture.release()
+    cv2.imwrite("test.jpg", frame)
+    print("Done!")
+
+    p = pyaudio.PyAudio()  # Create an interface to PortAudio
+    print("Recording...")
+
+    stream = p.open(format=sample_format,
+                    channels=channels,
+                    rate=fs,
+                    frames_per_buffer=chunk,
+                    input=True)
+    frames = []  # Initialize array to store frames
+
+    # Store data in chunks for 3 seconds
+    for i in range(0, int(fs / chunk * seconds)):
+        data = stream.read(chunk)
+        frames.append(data)
+
+    # Stop and close the stream
+    stream.stop_stream()
+    stream.close()
+    # Terminate the PortAudio interface
+    p.terminate()
+
+    print('Finished recording')
+
+    # Save the recorded data as a WAV file
+    wf = wave.open(cmd, 'wb')
+    wf.setnchannels(channels)
+    wf.setsampwidth(p.get_sample_size(sample_format))
+    wf.setframerate(fs)
+    wf.writeframes(b''.join(frames))
+    wf.close()
+
+    resp = main("command.wav", "test.jpg")
+    fname = parse_resp(resp)
+    #play file fname
+    winsound.PlaySound(fname, winsound.SND_FILENAME)
 
 def exec(a_fname, i_fname):
     resp = main(a_fname, i_fname)
