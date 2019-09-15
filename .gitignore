@@ -13,3 +13,4 @@ Android/captures
 Android/.externalNativeBuild
 Android/cxx
 .gitignore
+Server/Depth/models/*
