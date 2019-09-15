@@ -38,5 +38,7 @@ class ImageProcessor(object):
             for obj in local_image_objects.objects:
                 objects.append((obj.object_property, obj.rectangle.x, obj.rectangle.x + obj.rectangle.w, \
                                 obj.rectangle.y, obj.rectangle.y + obj.rectangle.h))
-        
-        return objects
+                                
+        dims = (local_image_objects.metadata.width, local_image_objects.metadata.height)
+
+        return (objects, dims)
