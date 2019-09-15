@@ -18,7 +18,7 @@ class testHTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
     # POST (image, audio)
     def do_POST(self):
-        self.send_response(204)
+        self.send_response(404)
         self.end_headers()
         return
 
