@@ -15,13 +15,15 @@ def main(aud_file, img_file):
     print(transcript)
     if ('looking' in transcript) and ('at' in transcript):
         resp = describe_scene(img_file)
-        print("case1")
+        print("describing scene")
     elif ('in' in transcript) and ('front' in transcript):
         resp = in_front(img_file)
-        print("case2")
+        print("finding object in front")
     elif 'that' in transcript:
         resp = whats_that(img_file)
-        print("case3")
+        print("what's that")
+    else:
+        resp = "Sorry, I don't understand. "
 
     return resp
 
@@ -113,7 +115,6 @@ def describe_scene(img_file):
                     phrase = phrase + "a " + positions[idx][i] + ", "
                 phrase = phrase + "and a " + positions[idx][-1] + ". "
 
-    print(phrase)
     return phrase
 
 def in_front(img_file):
@@ -154,6 +155,7 @@ def whats_that(img_file):
 
 def parse_resp(resp):
     fname = speechproc.tts_process(resp)
+    print("Speaking:" + resp)
     return fname
 
 while True:
