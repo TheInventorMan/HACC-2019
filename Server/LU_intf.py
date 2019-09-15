@@ -26,6 +26,8 @@ def get_intent(transcript):
         if ('looking' in transcript) and ('at' in transcript):
             print("describing scene")
             return "QualitativeScene"
+        elif ('how' in transcript) and ('far' in transcript):
+            return "QuantitativeScene"
         elif ('in' in transcript) and ('front' in transcript):
             print("finding object in front")
             return "InFront"

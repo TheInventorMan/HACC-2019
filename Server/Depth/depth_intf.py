@@ -18,8 +18,8 @@ import matplotlib.cm as cm
 import torch
 from torchvision import transforms, datasets
 
-import networks
-from layers import disp_to_depth
+import Depth.networks as networks
+from Depth.layers import disp_to_depth
 
 class DepthMap(object):
 
@@ -31,7 +31,7 @@ class DepthMap(object):
         if torch.cuda.is_available():
             self.device = torch.device("cuda")
 
-        model_path = os.path.join("models", model_name)
+        model_path = os.path.join("Depth/models", model_name)
         print("-> Loading model from ", model_path)
         encoder_path = os.path.join(model_path, "encoder.pth")
         depth_decoder_path = os.path.join(model_path, "depth.pth")
@@ -90,4 +90,3 @@ class DepthMap(object):
 
         print('-> Done!')
         return self.depth_map
-

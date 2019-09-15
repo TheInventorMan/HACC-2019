@@ -21,8 +21,11 @@ def main(aud_file, img_file):
     intent = get_intent(transcript)
 
     if intent == "QualitativeScene":
-        resp = describe_scene(img_file)
+        resp = describe_scene(img_file, quant=False)
         print("describing scene")
+    elif intent == "QuantitativeScene":
+        resp = describe_scene(img_file, quant=True)
+        print("describing scene (quant)")
     elif intent == "InFront":
         resp = in_front(img_file)
         print("finding object in front")
@@ -53,18 +56,30 @@ def get_3d_map(img_file):
     distance = []
 
     for obj in objects:
-        cropped = depth_map[obj[3]:obj[4], obj[1]:obj[2]]
+        cropped = depth_map[:,:,obj[3]:obj[4], obj[1]:obj[2]]
+        #print(depth_map.shape)
+        #print(obj[3], obj[4], obj[1], obj[2])
+        #print(cropped.shape)
         avg_disp = np.mean(cropped)
+        #print(avg_disp)
         dist = 22.5*0.54*721/(1242*avg_disp)
+        #print(dist)
+        dist = str(int(max(dist, 0.01)))
+
+        if dist != "1":
+            s = "s"
+        else:
+            s = ""
+
         if (obj[1]+obj[2])/2 < l_thresh:
-            left.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+            left.append(obj[0] + ", about " + dist + " meter" + s + " away")
         elif (obj[1]+obj[2])/2 > r_thresh:
-            right.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+            right.append(obj[0] + ", about " + dist + " meter" + s + " away")
         else:
             if (obj[3]+obj[4])/2 < h_thresh:
-                distance.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+                distance.append(obj[0] + ", about " + dist + " meter" + s + " away")
             else:
-                front.append(obj[0] + ", about " + str(int(dist)) + " meters away")
+                front.append(obj[0] + ", about " + dist + " meter" + s + " away")
 
     return (left, right, front, distance)
 
@@ -101,13 +116,16 @@ def get_2d_map(img_file):
 #fcn: get 3d map. send image to imageproc and get labels and bboxes
 #send image to depth map and make 3d space
 
-def describe_scene(img_file):
+def describe_scene(img_file, quant):
     captions = imgproc.get_img_captions(img_file)
     top_caption = "I see " + str(captions[0])
 
     phrase = top_caption + ". "
 
-    positions = get_2d_map(img_file)
+    if quant:
+        positions = get_3d_map(img_file)
+    else:
+        positions = get_2d_map(img_file)
 
     for idx in range(len(positions)):
         if len(positions[idx]) == 0:
