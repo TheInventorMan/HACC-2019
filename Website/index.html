@@ -1,16 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <title> for the Visually Impaired </title>
+<html>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-
-</head>
-
-<body>
-    <div>
+    <title>Simple Recorder.js demo with record, stop and pause</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+  <div>
         <video id="video" width="640" height="480" autoplay></video>
         <button id="snap">Snap Photo</button>
         <canvas id="canvas" width="640" height="480"></canvas>
@@ -18,7 +15,18 @@
         <audio id="player" controls></audio>
     </div>
 <audio id="player" controls></audio>
-<script>
+    <div id="controls">
+  	 <button id="recordButton">Record</button>
+  	 <button id="pauseButton" disabled>Pause</button>
+  	 <button id="stopButton" disabled>Stop</button>
+    </div>
+    <div id="formats">Format: start recording to see sample rate</div>
+  	<ol id="recordingsList"></ol>
+
+    <!-- inserting these scripts at the end to be able to use all the elements in the DOM -->
+  	<script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+  	<script src="js/app.js"></script>
+    <script>
   const player = document.getElementById('player');
 
   const handleSuccess = function(stream) {
@@ -70,6 +78,5 @@
             context.drawImage(video, 0, 0, 640, 480);
         });
     </script>
-</body>
-
+  </body>
 </html>
