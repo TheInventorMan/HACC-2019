@@ -346,16 +346,11 @@ public class MainActivity extends AppCompatActivity {
     String currentPhotoPath;
 
     private File createImageFile() throws IOException {
-        // Create an image file name
-        String imageFileName = "capturedImage";
         String filepath = Environment.getExternalStorageDirectory().getPath();
         File storageDir = new File(filepath, "AudioRecorder");
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
+        File image = new File(
+        storageDir, 
+        "capturedImage.jpg");
         // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
         return image;

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> for the Visually Impaired </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+</head>
+
+<body>
+    <div>
+        <video id="video" width="640" height="480" autoplay></video>
+        <button id="snap">Snap Photo</button>
+        <canvas id="canvas" width="640" height="480"></canvas>
+        <input type="file" accept="audio/*" capture id="recorder">
+        <audio id="player" controls></audio>
+    </div>
+<audio id="player" controls></audio>
+<script>
+  const player = document.getElementById('player');
+
+  const handleSuccess = function(stream) {
+    if (window.URL) {
+      player.srcObject = stream;
+    } else {
+      player.src = stream;
+    }
+  };
+
+  navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then(handleSuccess);
+</script>
+<script>
+  const recorder = document.getElementById('recorder');
+  const player = document.getElementById('player');
+
+  recorder.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    // Do something with the audio file.
+    player.srcObject = file;
+  });
+</script>
+    <script>
+        // Grab elements, create settings, etc.
+        var video = document.getElementById('video');
+
+        // Get access to the camera!
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            // Not adding `{ audio: true }` since we only want video now
+            navigator.mediaDevices.getUserMedia({
+                video: true
+            }).then(function(stream) {
+                //video.src = window.URL.createObjectURL(stream);
+                video.srcObject = stream;
+                video.play();
+            });
+        }
+    </script>
+
+    <script>
+        // Elements for taking the snapshot
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var video = document.getElementById('video');
+
+        // Trigger photo take
+        document.getElementById("snap").addEventListener("click", function() {
+            context.drawImage(video, 0, 0, 640, 480);
+        });
+    </script>
+</body>
+
+</html>
