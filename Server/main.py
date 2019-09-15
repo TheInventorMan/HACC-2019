@@ -1,5 +1,6 @@
 from image_intf import ImageProcessor
 from speech_intf import SpeechProcessor
+from LU_intf import get_intent
 
 #start server
 
@@ -11,15 +12,17 @@ speechproc.get_token()
 img = "image.jpg"
 
 def main(aud_file, img_file):
-    transcript = speechproc.stt_process(aud_file).lower()[:-1].split()
+    transcript = speechproc.stt_process(aud_file).lower()[:-1]
     print(transcript)
-    if ('looking' in transcript) and ('at' in transcript):
+    intent = get_intent(transcript)
+
+    if intent == "QualitativeScene":
         resp = describe_scene(img_file)
         print("describing scene")
-    elif ('in' in transcript) and ('front' in transcript):
+    elif intent == "InFront":
         resp = in_front(img_file)
         print("finding object in front")
-    elif 'that' in transcript:
+    elif intent == "WhatsThat":
         resp = whats_that(img_file)
         print("what's that")
     else:
