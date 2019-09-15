@@ -10,11 +10,23 @@ import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
-import android.net.http.AndroidHttpClient;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import android.util.Log;
@@ -28,10 +40,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.FileEntity;
+import com.android.internal.http.multipart.MultipartEntity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.security.AllPermission;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -271,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Requesting permission to RECORD_AUDIO
     private boolean permissionToRecordAccepted = false;
-    private String [] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
+    private String [] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET};
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -317,21 +327,16 @@ public class MainActivity extends AppCompatActivity {
 
         ActivityCompat.requestPermissions(this, permissions, ALL_PERMISSIONS);
 
+
         recordButton = findViewById(R.id.recordButton);
 
         recordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onRecord(mStartRecording);
-                if (mStartRecording) {
-                    recordButton.setText("Stop recording");
-                } else {
-                    recordButton.setText("Start recording");
-                }
-                mStartRecording = !mStartRecording;
-            }
-        });
-
+                                            @Override
+                                            public void onClick(View v) {
+                                                new clickHandle().execute("whatever");
+                                            }
+                                        }
+                                            );
     }
 
     @Override
@@ -346,11 +351,16 @@ public class MainActivity extends AppCompatActivity {
     String currentPhotoPath;
 
     private File createImageFile() throws IOException {
+        // Create an image file name
+        String imageFileName = "capturedImage";
         String filepath = Environment.getExternalStorageDirectory().getPath();
         File storageDir = new File(filepath, "AudioRecorder");
-        File image = new File(
-        storageDir, 
-        "capturedImage.jpg");
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
         // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
         return image;
@@ -374,16 +384,7 @@ public class MainActivity extends AppCompatActivity {
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, ALL_PERMISSIONS);
-
-                HttpClient http = AndroidHttpClient.newInstance("MyApp");
-                HttpPost method = new HttpPost("http://url-to-server");
-                method.setEntity(new FileEntity(new File("path-to-file"), "application/octet-stream"));
-                HttpResponse response = http.execute(method);
-
-                HttpPost method = new HttpPost("http://url-to-server");
-                method.setEntity(new FileEntity(new File("path-to-file"), "application/octet-stream"));
-                HttpResponse response = http.execute(method);
-
+//                MultipartFileUploader();
             }
         }
     }
@@ -395,11 +396,150 @@ public class MainActivity extends AppCompatActivity {
         mp.start();
         mp.release();
     }
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)){
-//            captureImage();
-//        }
-//        return true;
-//    }
+
+
+    //    Below is networking
+//    ####################
+//    ###################
+//    ###################
+
+public class clickHandle extends AsyncTask<String, Void, Void> {
+
+    private String boundary;
+    private static final String LINE_FEED = "\r\n";
+    private HttpURLConnection httpConn;
+    private String charset;
+    private OutputStream outputStream;
+    private PrintWriter writer;
+
+    /**
+     * This constructor initializes a new HTTP POST request with content type
+     * is set to multipart/form-data
+     * @param requestURL
+     * @param charset
+     * @throws IOException
+     */
+
+
+    /**
+     * Adds a form field to the request
+     * @param name field name
+     * @param value field value
+     */
+    public void addFormField(String name, String value) {
+        writer.append("--" + boundary).append(LINE_FEED);
+        writer.append("Content-Type: audio/x-wav;").append(
+                LINE_FEED);
+        writer.append(LINE_FEED);
+        writer.append(value).append(LINE_FEED);
+        writer.flush();
+    }
+
+    protected Void doInBackground(String... params ) {
+        String filepath = Environment.getExternalStorageDirectory().getPath();
+        File file = new File(filepath, "AudioRecorder");
+        File uploadFile = new File(file.getAbsolutePath() + "/" + "audio.wav");
+        charset = "UTF-8";
+        String requestURL = "http://172.16.140.217:8081";
+
+
+        // creates a unique boundary based on time stamp
+        String boundary = "===" + System.currentTimeMillis() + "===";
+        try {
+            URL url = new URL(requestURL);
+            httpConn = (HttpURLConnection) url.openConnection();
+            httpConn.setUseCaches(false);
+            httpConn.setDoOutput(true); // indicates POST method
+            httpConn.setDoInput(true);
+            httpConn.setRequestProperty("Content-Type",
+                    "multipart/form-data; boundary=" + boundary);
+            httpConn.setRequestProperty("User-Agent", "CodeJava Agent");
+
+            outputStream = new FileOutputStream("mywav.wav", false);
+            httpConn.setRequestProperty("Test", "Bonjour");
+            writer = new PrintWriter(new OutputStreamWriter(outputStream, charset),
+                    true);
+            addFilePart("fileUpload", uploadFile);
+
+            writer.close();
+            InputStream stream = httpConn.getInputStream();
+
+            outputStream.write(stream.read());
+            outputStream.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    public void addFilePart(String fieldName, File uploadFile)
+            throws IOException {
+        String fileName = uploadFile.getName();
+        writer.append("--" + boundary).append(LINE_FEED);
+        writer.append(
+                "Content-Disposition: form-data; name=\"" + fieldName
+                        + "\"; filename=\"" + fileName + "\"")
+                .append(LINE_FEED);
+        writer.append(
+                "Content-Type: "
+                        + URLConnection.guessContentTypeFromName(fileName))
+                .append(LINE_FEED);
+        writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
+        writer.append(LINE_FEED);
+        writer.flush();
+
+        FileInputStream inputStream = new FileInputStream(uploadFile);
+        byte[] buffer = new byte[4096];
+        int bytesRead = -1;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bytesRead);
+        }
+        outputStream.flush();
+        inputStream.close();
+
+        writer.append(LINE_FEED);
+        writer.flush();
+    }
+
+    /**
+     * Adds a header field to the request.
+     * @param name - name of the header field
+     * @param value - value of the header field
+     */
+    public void addHeaderField(String name, String value) {
+        writer.append(name + ": " + value).append(LINE_FEED);
+        writer.flush();
+    }
+
+    /**
+     * Completes the request and receives response from the server.
+     * @return a list of Strings as response in case the server returned
+     * status OK, otherwise an exception is thrown.
+     * @throws IOException
+     */
+    public List<String> finish() throws IOException {
+        List<String> response = new ArrayList<String>();
+
+        writer.append(LINE_FEED).flush();
+        writer.append("--" + boundary + "--").append(LINE_FEED);
+        writer.close();
+
+        // checks server's status code first
+        int status = httpConn.getResponseCode();
+        if (status == HttpURLConnection.HTTP_OK) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    httpConn.getInputStream()));
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                response.add(line);
+            }
+            reader.close();
+            httpConn.disconnect();
+        } else {
+            throw new IOException("Server returned non-OK status: " + status);
+        }
+
+        return response;
+    }
+}
 }

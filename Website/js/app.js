@@ -157,3 +157,30 @@ function createDownloadLink(blob) {
     recordingsList.appendChild(li);
     return link.download;
 }
+
+import express from 'express';
+import { json, urlencoded } from 'body-parser';
+ 
+var app = express();
+ 
+app.use(json());
+app.use(urlencoded({ extended: false }));
+ 
+app.post("/postdata", (req, res) => {
+    var foo = req.body.foo;
+    var kaa = req.body.kaa;
+    console.log(foo);
+    console.log(kaa);
+    res.send("process complete");
+});
+ 
+app.get("/getdata", (req, res) => {
+    var data = { // this is the data you're sending back during the GET request
+        data1: "mee",
+        data2: "po"
+    }
+    res.status(200).json(data)
+});
+
+console.log("sssss")
+app.listen(3000);
