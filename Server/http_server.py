@@ -57,7 +57,7 @@ def run():
     # Choose port 8080, for port 80, which is normally used for a http server, you need root access
     server_address = ('172.16.140.217', 8081)
     httpd = HTTPServer(server_address, testHTTPServer_RequestHandler)
-    httpd.socket = ssl.wrap_socket(httpd.socket, keyfile="server.key", certfile="server.pem", server_side=True)
+    #httpd.socket = ssl.wrap_socket(httpd.socket, keyfile="server.key", certfile="server.pem", server_side=True)
     print('running server...')
     httpd.serve_forever()
 
