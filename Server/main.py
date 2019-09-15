@@ -221,6 +221,6 @@ while True:
     command = input("enter command:")
     cmd_aud = speechproc.tts_process(command)
 
-    resp = main('resp.wav', img)
+    resp = main('resp.wav', img) #send audio and img files to main method
 
-    print(parse_resp(resp))
+    print(parse_resp(resp)) #final file to send back to android

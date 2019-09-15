@@ -10,4 +10,9 @@ def rm_jpg():
         if file.endswith('.jpg') or file.endswith('.jpeg'):
             os.remove(file)
 
-print(list_files('C:\\Users\\georg\\Desktop'))
+from adb.client import Client as AdbClient
+client = AdbClient(host="localhost", port=5037)
+device = client.device("emulator-5554")
+
+device.pull("/Phone/AudioRecorder/audio.wav", "audio.wav")
+#print(list_files('C:\\Users\\georg\\Desktop'))
